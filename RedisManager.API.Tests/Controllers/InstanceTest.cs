@@ -12,7 +12,7 @@ using StackExchange.Redis;
 namespace RedisManager.API.Tests.Controllers
 {
     [TestClass]
-    public class UnitTest1
+    public class InstanceTest
     {
         [TestMethod]
         public async Task should_get_all_keys()
