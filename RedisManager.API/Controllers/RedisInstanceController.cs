@@ -21,7 +21,7 @@ namespace RedisManager.API.Controllers
         {
             var endpoints = _RedisMUX.GetEndPoints(true);
             List<RedisKey> keys = new List<RedisKey>();
-            foreach (var endpoint in endpoints)
+            foreach (var endpoint in endpoints) 
             {
                 var server = _RedisMUX.GetServer(endpoint);
                 keys.AddRange(server.Keys());
@@ -29,7 +29,13 @@ namespace RedisManager.API.Controllers
             return keys;
         }
 
-        public Dictionary<string, string> Config()
+        public async Task<string> Value(string key)
+        {
+            var database = _RedisMUX.GetDatabase();
+            return await database.StringGetAsync(key);
+        }
+
+        public async Task<Dictionary<string, string>> Config()
         {
             Dictionary<string, string> configs = new Dictionary<string, string>();
             var endpoints = _RedisMUX.GetEndPoints(true);

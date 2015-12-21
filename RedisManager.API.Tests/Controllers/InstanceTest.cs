@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
@@ -14,21 +15,41 @@ namespace RedisManager.API.Tests.Controllers
     public class UnitTest1
     {
         [TestMethod]
-        public void should_get_all_keys()
+        public async Task should_get_all_keys()
         {
+            RedisKey key = new RedisKey();
+           
+            var muxServer = Substitute.For<IServer>();
+            muxServer.Keys().Returns(x => new List<RedisKey>()
+                                                {
+                                                    "lsd"
+                                                });
             var muxSubstitute = Substitute.For<IConnectionMultiplexer>();
-            muxSubstitute.GetEndPoints(true).Returns(x => new EndPoint[1]);
+            muxSubstitute.GetServer(Arg.Any<EndPoint>()).Returns(x => muxServer);
+            muxSubstitute.GetEndPoints(Arg.Any<bool>()).Returns(x => new EndPoint[1]);
 
             RedisInstanceController controller = new RedisInstanceController(muxSubstitute);
+            var result = await controller.Keys();
 
-            var result = controller.Keys();
-
-            result.Should().NotBeNull();
-            result.IsFaulted.Should().BeFalse("Redis should not return a fault");
+            result.Should().Contain("lsd");
         }
 
         [TestMethod]
-        public void should_get_server_config()
+        public async Task should_get_value_for_key()
+        {
+            var muxSubstitute = Substitute.For<IConnectionMultiplexer>();
+            var databaseSubstitute = Substitute.For<IDatabase>();
+            muxSubstitute.GetDatabase().Returns(databaseSubstitute);
+            databaseSubstitute.StringGetAsync("lsd").Returns("high");
+
+            RedisInstanceController controller = new RedisInstanceController(muxSubstitute);
+            var value = await controller.Value("lsd");
+
+            value.ToLower().Should().Be("high");  
+        }
+
+        [TestMethod]
+        public async Task should_get_server_config()
         {
            
             var muxServer = Substitute.For<IServer>();
@@ -41,7 +62,7 @@ namespace RedisManager.API.Tests.Controllers
             muxSubstitute.GetEndPoints(true).Returns(x => new EndPoint[1]);
            
             RedisInstanceController controller = new RedisInstanceController(muxSubstitute);
-            var config = controller.Config();
+            var config = await controller.Config();
 
             config.Should().ContainKey("lsd");
             config.Should().ContainValue("high");
