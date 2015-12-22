@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Runtime.Remoting.Messaging;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -59,7 +62,7 @@ namespace RedisManager.API.Tests.Controllers
                                                 });
             var muxSubstitute = Substitute.For<IConnectionMultiplexer>();
             muxSubstitute.GetServer(Arg.Any<EndPoint>()).Returns(x => muxServer);
-            muxSubstitute.GetEndPoints(true).Returns(x => new EndPoint[1]);
+            muxSubstitute.GetEndPoints(Arg.Any<bool>()).Returns(x => new EndPoint[1]);
            
             RedisInstanceController controller = new RedisInstanceController(muxSubstitute);
             var config = await controller.Config();
@@ -68,5 +71,32 @@ namespace RedisManager.API.Tests.Controllers
             config.Should().ContainValue("high");
         }
 
+        [TestMethod]
+        public async Task should_get_info()
+        {
+            var conn = await ConnectionMultiplexer.ConnectAsync("localhost:6000,allowAdmin=true");
+
+            List<DataContainer> containerList = new List<DataContainer>();
+            var dummyValuesDict = new Dictionary<string, string>{ { "too", "high"} };
+            var lstKeys = dummyValuesDict.ToArray();
+            var dummyGrouping = lstKeys.GroupBy(x => x.Key).ToArray();
+
+            var muxSubstitute = Substitute.For<IConnectionMultiplexer>();
+            var muxServer = Substitute.For<IServer>();
+            muxSubstitute.GetServer(Arg.Any<EndPoint>()).Returns(muxServer);
+            muxSubstitute.GetEndPoints(Arg.Any<bool>()).Returns(x => new EndPoint[1]);
+            muxServer.InfoAsync().Returns(dummyGrouping);
+
+            RedisInstanceController controller = new RedisInstanceController(muxSubstitute);
+            var info = await controller.Info();
+
+            info.Should().ContainSingle(x => x.ContainsKey("too"));
+        }
+
+        public class DataContainer
+        {
+            public string Key { get; set; }
+            public List<Dictionary<string, string>> Values { get; set; }
+        }
     }
 }

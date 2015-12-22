@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using StackExchange.Redis;
 using System.Threading.Tasks;
+using Microsoft.Ajax.Utilities;
 
 namespace RedisManager.API.Controllers
 {
@@ -49,6 +52,35 @@ namespace RedisManager.API.Controllers
             }
 
             return configs;
+        }
+
+        public async Task<List<Dictionary<string, Dictionary<string, string>>>> Info()
+        {
+            List<Dictionary<string, Dictionary<string, string>>> serverInfoValues = new List<Dictionary<string, Dictionary<string, string>>>();
+
+            var endpoints = _RedisMUX.GetEndPoints(true);
+            foreach (var endpoint in endpoints)
+            {
+                var server = _RedisMUX.GetServer(endpoint);
+                var infoDetails = await server.InfoAsync();
+                foreach (var infoDetail in infoDetails)
+                {
+                    var key = infoDetail.Key;
+                    Dictionary<string, string> detailsDict = new Dictionary<string, string>();
+                    foreach (var infoBreakdown in infoDetail)
+                    {
+                        var detailsKey = infoBreakdown.Key;
+                        var detailsValue = infoBreakdown.Value;
+                        if (!detailsKey.IsNullOrWhiteSpace())
+                            detailsDict.Add(detailsKey, detailsValue);
+                    }
+                    Dictionary<string, Dictionary<string, string>> groupDetails =
+                        new Dictionary<string, Dictionary<string, string>>();
+                    groupDetails.Add(key, detailsDict);
+                    serverInfoValues.Add(groupDetails);
+                }
+            }
+            return serverInfoValues;
         }
     }
 }
