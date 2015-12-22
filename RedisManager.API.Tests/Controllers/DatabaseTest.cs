@@ -18,7 +18,6 @@ namespace RedisManager.API.Tests.Controllers
             muxSubstitute.GetEndPoints(true).Returns(x => new EndPoint[1]);
 
             RedisDatabaseController controller = new RedisDatabaseController(muxSubstitute);
-
             var dbSize = controller.Size();
 
             dbSize.Should().Be(0);

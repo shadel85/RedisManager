@@ -15,7 +15,6 @@ namespace RedisManager.API.Tests.Controllers
             const int redisPort = 6000;
 
             RedisConnectController controller = new RedisConnectController();
-
             var redisConnection = await controller.Connect(redisServer, redisPort);
 
             Assert.IsTrue(redisConnection.IsConnected);

@@ -19,7 +19,6 @@ namespace RedisManager.API.Tests.Controllers
             muxSubstitute.GetEndPoints(true).Returns(x => new EndPoint[1]);
 
             RedisClientController controller = new RedisClientController(muxSubstitute);
-
             var clients = await controller.Clients();
 
             clients.Count.Should().Be(0);
