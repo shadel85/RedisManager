@@ -72,7 +72,6 @@ namespace RedisManager.API.Tests.Controllers
         [TestMethod]
         public async Task should_get_info()
         {
-            List<DataContainer> containerList = new List<DataContainer>();
             var dummyValuesDict = new Dictionary<string, string>{ { "lsd", "high"} };
             var lstKeys = dummyValuesDict.ToArray();
             var dummyGrouping = lstKeys.GroupBy(x => x.Key).ToArray();
@@ -86,12 +85,6 @@ namespace RedisManager.API.Tests.Controllers
             var info = await controller.Info();
 
             info.Should().ContainSingle(x => x.ContainsKey("lsd"));
-        }
-
-        public class DataContainer
-        {
-            public string Key { get; set; }
-            public List<Dictionary<string, string>> Values { get; set; }
         }
     }
 }
