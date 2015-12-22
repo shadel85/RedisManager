@@ -19,9 +19,7 @@ namespace RedisManager.API.Tests.Controllers
     {
         [TestMethod]
         public async Task should_get_all_keys()
-        {
-            RedisKey key = new RedisKey();
-           
+        {           
             var muxServer = Substitute.For<IServer>();
             muxServer.Keys().Returns(x => new List<RedisKey>()
                                                 {
@@ -74,13 +72,10 @@ namespace RedisManager.API.Tests.Controllers
         [TestMethod]
         public async Task should_get_info()
         {
-            var conn = await ConnectionMultiplexer.ConnectAsync("localhost:6000,allowAdmin=true");
-
             List<DataContainer> containerList = new List<DataContainer>();
-            var dummyValuesDict = new Dictionary<string, string>{ { "too", "high"} };
+            var dummyValuesDict = new Dictionary<string, string>{ { "lsd", "high"} };
             var lstKeys = dummyValuesDict.ToArray();
             var dummyGrouping = lstKeys.GroupBy(x => x.Key).ToArray();
-
             var muxSubstitute = Substitute.For<IConnectionMultiplexer>();
             var muxServer = Substitute.For<IServer>();
             muxSubstitute.GetServer(Arg.Any<EndPoint>()).Returns(muxServer);
@@ -90,7 +85,7 @@ namespace RedisManager.API.Tests.Controllers
             RedisInstanceController controller = new RedisInstanceController(muxSubstitute);
             var info = await controller.Info();
 
-            info.Should().ContainSingle(x => x.ContainsKey("too"));
+            info.Should().ContainSingle(x => x.ContainsKey("lsd"));
         }
 
         public class DataContainer
