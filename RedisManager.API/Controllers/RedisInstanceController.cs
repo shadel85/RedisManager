@@ -82,5 +82,10 @@ namespace RedisManager.API.Controllers
             }
             return serverInfoValues;
         }
+
+        public string Status()
+        {
+            return _RedisMUX.GetStatus();
+        }
     }
 }
