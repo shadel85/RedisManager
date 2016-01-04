@@ -86,5 +86,17 @@ namespace RedisManager.API.Tests.Controllers
 
             info.Should().ContainSingle(x => x.ContainsKey("lsd"));
         }
+
+        [TestMethod]
+        public void should_get_status()
+        {
+            var muxSubstitute = Substitute.For<IConnectionMultiplexer>();
+            muxSubstitute.GetStatus().Returns("TestStatus");
+
+            RedisInstanceController controller = new RedisInstanceController(muxSubstitute);
+            var status = controller.Status();
+
+            status.Should().Be("TestStatus");
+        }
     }
 }
